@@ -1,0 +1,122 @@
+---
+title: "HW3_608"
+author: "Dominika Markowska-Desvallons"
+date: "10/9/2021"
+output:
+  html_document: default
+runtime: shiny
+---
+
+
+```{r}
+library(shiny)
+library(DT)
+library(plotly)
+library(ggplot2)
+library(dplyr)
+library(googleVis)
+library(rsconnect)
+```
+```{r}
+
+rsconnect::setAccountInfo(name='hrensiminshiny', token='FAD278C9BB1B137E636EA8FBAF3C4CD1', secret='9X5dQfqzIhX5NihsvDJnTNIjPMOlctQo0m1Mgr0I')
+
+```
+Question 1
+As a researcher, you frequently compare mortality rates from particular causes across different States. 
+You need a visualization that will let you see (for 2010 only) the crude mortality rate, across all States, from one cause (for example, Neoplasms, which are effectively cancers). 
+Create a visualization that allows you to rank States by crude mortality for each cause of death.
+
+```{r}
+
+data <- read.csv("https://raw.githubusercontent.com/charleyferrari/CUNY_DATA_608/master/module3/data/cleaned-cdc-mortality-1999-2010-2.csv", header = TRUE, stringsAsFactors = FALSE)
+
+data2010 <- subset(data, Year==2010)
+
+d_causes <- unique(data2010$ICD.Chapter)
+
+
+
+ui1 <- fluidPage(
+  titlePanel("Death Rates in 2010"),
+  fluidRow(selectInput("cause", "Causes:", choices=sort(d_causes))), 
+  plotOutput("plot1", height = 800)
+)
+```
+
+
+```{r}
+#  causes for 2010
+d_causes <- as.data.frame(unique(data2010$ICD.Chapter))
+
+
+# Create user-interface definition
+s1 <- function(input, output) {
+  showrates <- reactive({showrates <- subset(data2010, ICD.Chapter==input$cause)})
+  output$plot1 <- renderPlot({
+    ggplot(showrates(), aes(x=Crude.Rate, y=reorder(State, -Crude.Rate)))+
+      scale_x_continuous(limits=c(0, max(showrates()$Crude.Rate))+5, expand = c(0,0))+
+      geom_segment(aes(yend=State), xend=0, color="black")+
+      geom_point(size=3, color = "red") +
+      theme_bw()+
+      theme(panel.grid.major.y = element_blank(), axis.title=element_text(size=16))+
+      xlab("Death Rates") +
+      ylab("States") +
+      ggtitle(input$cause)
+  }) 
+}
+
+```
+
+
+```{r}
+shinyApp(ui = ui1, server = s1)
+```
+Question 2
+Often you are asked whether particular States are improving their mortality rates (per cause) faster than, or slower than, the national average. Create a visualization that lets your clients see this for themselves for one cause of death at the time. Keep in mind that the national average should be weighted by the national population.
+
+
+```{r}
+
+data2 <- read.csv("https://raw.githubusercontent.com/charleyferrari/CUNY_DATA608/master/lecture3/data/cleaned-cdc-mortality-1999-2010-2.csv", header = TRUE, stringsAsFactors = FALSE) 
+
+
+d_causes<-unique(data2$ICD.Chapter)
+states<-unique(data2$State)
+
+ui2 <- fluidPage(
+  title = "State Mortality Rates Over Time",
+  fluidRow(
+    column(6, selectInput('causes', 'Death caused by', choices=sort(d_causes)) ),
+    column(6, selectInput('states', 'State', choices=sort(states)) )
+  ),
+  fluidRow(
+    plotOutput('myplot')
+  )
+)
+```
+
+```{r}
+# creating server
+s2 <- function(input, output) {
+  output$myplot <- renderPlot({
+    data <- data2 %>% 
+      filter(State==input$states, ICD.Chapter==input$causes)
+    usavg <- data2%>% 
+      filter(ICD.Chapter==input$causes) %>% 
+      group_by(Year) %>% 
+      summarise(rate=(sum(as.numeric(Deaths))/sum(as.numeric(Population))*100000))
+    ggplot(data, aes(x=Year, y=Crude.Rate, color='blue')) + 
+      geom_line(size=3) + 
+      geom_line(aes(x=usavg$Year, y=usavg$rate, color='red'),size=4) + 
+      scale_color_manual(
+        name='Legend', 
+        values=c('red'='red', 'blue'='blue'), 
+        labels=c('National Average', 'State'))
+  })
+}
+```
+
+```{r}
+shinyApp(ui = ui2, server = s2)
+```
