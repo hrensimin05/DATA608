@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <h1>DATA 608 - Homework 5</h1>
+        <script type="text/javascript"></script>
+    </head>
+    <body>
+    <p>Type your word here</p>
+    <script type="text/javascript">
+    function reverse(str){
+        var word = str.split("");
+        var backword = word.reverse();
+        var answer = backword.join("");
+        return answer;
+    };
+    function go(){
+            var x = document.getElementById("texta");
+            x.innerHTML = reverse(document.getElementById('str').value);
+        }
+    </script>
+    <form name="mystring">
+        <input id="str" type="str" size="20">
+        <input type="button" value="Reverse" onClick="go();">
+    </form>
+    <br>
+    <div id="texta"></div>
+    </body>
+    
+    <body>
+        <p1>Enter the number then print a table with the first 20 multiples</p1>
+        <script type="text/javascript">
+        function multiple(number){
+            list = [];
+            var val = '<table border="1">';
+            for (i = 1;i <= 20; i++) {list.push(number * i)};
+            for (i = 0; i < 20; i++){
+                if (i % 4 == 0) { 
+                    val = val +'<tr>'
+                };
+                val = val + '<td>' + list[i] + '</td>';
+                if (i % 4 == 3){
+                    val = val + '</tr>'};};
+                 val = val + '</table>';
+            return val
+        };
+        function display(){
+            var w = document.getElementById("target");
+            w.innerHTML = multiple(document.getElementById('number').value);
+        }
+        </script>
+        <form name="myTable">
+            <input id="number" type="number" size="4">
+            <input type="button" value="Generate Table" onClick="display();">
+        </form>
+        <br>
+        <div id="target"></div>
+    </body>
+</html>
+
