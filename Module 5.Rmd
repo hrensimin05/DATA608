@@ -1,0 +1,19 @@
+---
+title: "Homework5"
+author: "Dominika Markowska-Desvallons"
+date: "11/5/2021"
+output:
+  html_document:
+    css:
+    highlight: pygments
+    theme: cerulean
+    toc: false
+    toc_float: false
+  pdf_document: default
+---
+
+```{r echo=FALSE}
+library(shiny)
+ui <- htmlTemplate("homework5.html")
+shinyUI(ui)
+```
